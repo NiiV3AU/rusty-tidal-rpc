@@ -1,70 +1,87 @@
-![GitHub All Releases](https://img.shields.io/github/downloads/purpl3F0x/TIDAL-Discord-Rich-Presence-UNOFFICIAL/total?style=flat-square)
-![GitHub Releases](https://img.shields.io/github/downloads/purpl3F0x/TIDAL-Discord-Rich-Presence-UNOFFICIAL/latest/total?style=flat-square)
+# TIDAL Discord RPC (Rust rewrite)
 
-## TIDAL - Discord Rich Presence plug-in  (UNOFFICIAL)
+A Windows-first Discord Rich Presence client for the TIDAL desktop app.
 
+> **AI disclosure:** This is a quick, small project written primarily by
+> OpenAI Codex through user-directed iteration and testing. It is hobby
+> software, so please review the code and report issues rather than assuming it
+> has received a full professional security or compatibility audit.
 
-Unofficial plug in to obtain Discord Rich Presence.
+Unlike the legacy implementation, this version reads TIDAL's Windows media
+session instead of guessing playback from its window title. Discord therefore
+gets the real track metadata, play/pause state, duration, and current position.
 
-Feel free to report any bugs or make suggestions.
+## Features
 
-<br>
+- Accurate Discord progress bar based on TIDAL's media timeline
+- A persistent paused presence with the exact paused position
+- Album artwork from a cached, confidence-checked public catalog lookup
+- Automatic Discord reconnects and activity cleanup
+- No private TIDAL token or account credentials
 
-**If you like the project and want to buy me a glass of milk :)**
+## Build and run
 
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3XY7W2XHHUZF2&source=url)
+Requirements: Windows 10 version 1809 or newer, Rust, the TIDAL desktop app,
+and the Discord desktop app.
 
-## Example Screenshot
+```powershell
+cargo build --release
+.\target\release\tidal-discord-rpc.exe
+```
 
-![alt text](./assets/screenshot.jpg)
+Keep the executable running while using TIDAL. The release binary is located at
+`target\release\tidal-discord-rpc.exe`. It runs in the notification area: right
+click its four-diamond icon to temporarily disable presence or exit cleanly.
 
-When playing a song with master audio quality.
+### Downloading a release
 
-![alt text](./assets/highres.jpg)
+Open this repository's **Releases** page and download
+`tidal-discord-rpc-windows-x64.exe`. No installer or extra DLL is required.
 
-or you have paused playback
+Release downloads include a `.sha256` file for integrity verification:
 
-![alt text](./assets/paused.jpg)
+```powershell
+Get-FileHash .\tidal-discord-rpc-windows-x64.exe -Algorithm SHA256
+```
 
+By default the app uses the original project's Discord application ID. To use
+your own Discord application's name and icon:
 
+```powershell
+$env:TIDAL_RPC_DISCORD_APP_ID = "your_application_id"
+.\target\release\tidal-discord-rpc.exe
+```
 
-## Instructions
-The new version doesn't require connection with last-fm, 'cause I reversed engineered TIDAL API,  get the data from the window name of the app.
+## How artwork works
 
-1.  Download the latest release from [here](https://github.com/purpl3F0x/TIDAL-Discord-Rich-Presence-UNOFFICIAL/releases)
-(windows and osx are supported).
+Windows supplies TIDAL's artwork as local bytes, while Discord Rich Presence
+requires a public HTTPS image URL. This app searches Apple's public music
+catalog for the same title, artist, and album, requires a strong metadata match,
+and caches the result for the life of the process. If no confident match exists,
+it omits the dynamic image so Discord uses the application's configured icon
+instead of showing a broken `?` image.
 
-2.  Run the binary, enjoy.
+## Privacy
 
-3.  *Optional*: Place the exe in windows start-up folder to start when computer starts. For OSX select that option from by right clicking the app on taskbar.
+Track, artist, and album text is sent to Apple's public search endpoint only to
+resolve cover artwork. Playback state and position remain local, apart from the
+Rich Presence data sent to the locally running Discord client.
 
+## Publishing a release
 
-The program registers an icon on the taskbar, ~~where you can see the song playing and temporary disable *rich presence*~~.
+The included GitHub Actions workflow builds releases automatically. Update the
+version in `Cargo.toml`, commit it, and push a matching version tag:
 
-![alt text](./assets/taskbar.jpg) ![alt text](./assets/taskbar_opened.png)
+```powershell
+git tag v2.0.0
+git push origin v2.0.0
+```
 
-P.S. Remember to make sure you have Game Activity enabled!
+GitHub will test the project, build the Windows executable, calculate its
+SHA-256 checksum, and publish both files on the Releases page.
 
-![example of Game Activity tab inside of Discord Settings](https://user-images.githubusercontent.com/3516420/80171200-53356280-85af-11ea-8a51-66b3780250be.png)
+## Credits and license
 
-Check that _Tidal - Discord RPC_ is running, and add it as a game. It might show as "TIDAL", or as the band you are currently listening to:
-
-![Select Tidal - Discord RPC as a ](https://user-images.githubusercontent.com/12559216/149215040-98e81a25-7ba7-44c5-828b-74b44080d7ee.png)
-
-
-## Build Instructions
-
-To build the executable you'll need either msvc on windows or clang on osx. For windows I had problems with gcc either conflicting with discord lib on (debug) and http not have <mutex>.
-
-
-### Disclaimer: This project is Unofficial and it's not published from TIDAL.com &/ Aspiro.
-
-Kudos to:
-+ https://github.com/nlohmann/json
-+ https://github.com/yhirose/cpp-httplib
-
-for their awesome work.
-
-
-
-> ### Stavros Avramidis Never Settle & Keep Running
+This is a ground-up Rust rewrite inspired by Stavros Avramidis's original
+unofficial TIDAL Discord Rich Presence project. It is not affiliated with or
+endorsed by TIDAL or Discord. Released under the MIT License; see `LICENSE`.

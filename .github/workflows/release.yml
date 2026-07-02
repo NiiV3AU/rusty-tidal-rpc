@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install current stable Rust
+        run: |
+          rustup update stable
+          rustup default stable
+      - name: Test
+        run: cargo test --locked
+      - name: Build release executable
+        run: cargo build --release --locked
+      - name: Prepare release files
+        shell: pwsh
+        run: |
+          $name = "tidal-discord-rpc-windows-x64.exe"
+          Copy-Item "target/release/tidal-discord-rpc.exe" $name
+          $hash = (Get-FileHash $name -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name" | Set-Content "$name.sha256" -Encoding ascii
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $name = "tidal-discord-rpc-windows-x64.exe"
+          gh release create "${{ github.ref_name }}" $name "$name.sha256" --generate-notes --title "${{ github.ref_name }}"
