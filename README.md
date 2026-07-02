@@ -11,6 +11,9 @@ Unlike the legacy implementation, this version reads TIDAL's Windows media
 session instead of guessing playback from its window title. Discord therefore
 gets the real track metadata, play/pause state, duration, and current position.
 
+<img width="467" height="168" alt="Discord_OUynX2jQlb" src="https://github.com/user-attachments/assets/d6afbd0c-fa0a-4792-9baa-8fcd1589da3f" />
+
+
 ## Features
 
 - Accurate Discord progress bar based on TIDAL's media timeline
